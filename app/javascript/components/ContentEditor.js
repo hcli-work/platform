@@ -38,7 +38,7 @@ import Table from '@ckeditor/ckeditor5-table/src/table';
 import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 import SimpleUploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/simpleuploadadapter';
-
+import Autosave from '@ckeditor/ckeditor5-autosave/src/autosave';
 
 // CKEditor plugin implementing a content part widget to be used in the editor content.
 import ContentPartPreviewEditing from '../ckeditor/contentpartpreviewediting';
@@ -87,6 +87,7 @@ BalloonEditor.builtinPlugins = [
     Table,
     TableToolbar,
     SimpleUploadAdapter,
+    Autosave,
 
     ContentPartPreviewEditing,
     ContentCommonEditing,
@@ -169,7 +170,13 @@ BalloonEditor.defaultConfig = {
         }
     },
     // This value must be kept in sync with the language defined in webpack.config.js.
-    language: 'en'
+    language: 'en',
+    // Autosave
+    autosave: {
+        save( editor ) {
+            return saveData( editor.getData() );
+        }
+    }
 };
 
 function addRetainedDataID(element) {
@@ -178,6 +185,29 @@ function addRetainedDataID(element) {
 }
 
 window.addRetainedDataID = addRetainedDataID;
+
+function saveData( data ) {
+    return fetch("/course_contents/1.json", {
+            method: 'PUT',
+            body: JSON.stringify({body: data}), // data can be `string` or {object}!
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': Rails.csrfToken()
+            }
+        })
+        .then(res => res.json())
+        .then(
+            (result) => {
+                console.log('saved');
+            },
+            // Note: it's important to handle errors here
+            // instead of a catch() block so that we don't swallow
+            // exceptions from actual bugs in components.
+            (error) => {
+                console.log(error);
+            }
+        );
+}
 
 class ContentEditor extends Component {
     constructor( props ) {

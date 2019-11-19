@@ -752,7 +752,7 @@
     globals "^11.1.0"
     lodash "^4.17.13"
 
-"@babel/types@^7.0.0", "@babel/types@^7.3.0", "@babel/types@^7.4.0", "@babel/types@^7.7.4":
+"@babel/types@^7.0.0", "@babel/types@^7.3.0", "@babel/types@^7.7.4":
   version "7.7.4"
   resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.7.4.tgz#516570d539e44ddf308c07569c258ff94fde9193"
   integrity sha512-cz5Ji23KCi4T+YIE/BolWosrJuSmoZeN1EFnRtBwF+KKLi8GG/Z2c2hOJJeCXPk4mwk4QFvTmwIodJowXgttRA==
@@ -761,20 +761,14 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@ckeditor/ckeditor-cloud-services-core@^16.0.0":
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor-cloud-services-core/-/ckeditor-cloud-services-core-16.0.0.tgz#56c7459dfeb8a375fa600ce513c4fd3238ab6b70"
-  integrity sha512-xiPaeXNGm5wAtW1v4gbkUP7RBdaw/bekcBZcIdhPkftOsLsjInXeOD7p4KMKuFLJYDaYB3vmaj+1G+XDKiGtdA==
+"@babel/types@^7.4.0":
+  version "7.7.2"
+  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.7.2.tgz#550b82e5571dcd174af576e23f0adba7ffc683f7"
+  integrity sha512-YTf6PXoh3+eZgRCBzzP25Bugd2ngmpQVrk7kXX0i5N9BO7TFBtIgZYs7WtxtOGs8e6A4ZI7ECkbBCEHeXocvOA==
   dependencies:
-    "@ckeditor/ckeditor5-utils" "^16.0.0"
-
-"@ckeditor/ckeditor5-adapter-ckfinder@^16.0.0":
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor5-adapter-ckfinder/-/ckeditor5-adapter-ckfinder-16.0.0.tgz#bce1081a68f7753d0cadbe47b6861b494cf7889c"
-  integrity sha512-B1xRa6TWJ62wTFLZ9tNbeGFPKDmhvNrnzczjLbomfvKu70dZoCRl4SHA593IWpIgjNXEcAtlVRryQQeNRMtZzw==
-  dependencies:
-    "@ckeditor/ckeditor5-core" "^16.0.0"
-    "@ckeditor/ckeditor5-upload" "^16.0.0"
+    esutils "^2.0.2"
+    lodash "^4.17.13"
+    to-fast-properties "^2.0.0"
 
 "@ckeditor/ckeditor5-autoformat@^16.0.0":
   version "16.0.0"
@@ -783,6 +777,15 @@
   dependencies:
     "@ckeditor/ckeditor5-core" "^16.0.0"
     "@ckeditor/ckeditor5-typing" "^16.0.0"
+
+"@ckeditor/ckeditor5-autosave@^16.0.0":
+  version "16.0.0"
+  resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor5-autosave/-/ckeditor5-autosave-16.0.0.tgz#c21a3dbc4b931c0a873d6e85e148cf61d01245b8"
+  integrity sha512-ONMHnOEAUoaGH5NQsjTRwhvp8jatALATDYOYzUj92XoHV41K8u7uScKOIK4BOuy2bGzaGdkLQmCfwwC17vG3/Q==
+  dependencies:
+    "@ckeditor/ckeditor5-core" "^16.0.0"
+    "@ckeditor/ckeditor5-utils" "^16.0.0"
+    lodash-es "^4.17.10"
 
 "@ckeditor/ckeditor5-basic-styles@^16.0.0":
   version "16.0.0"
@@ -806,17 +809,6 @@
   resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor5-build-classic/-/ckeditor5-build-classic-16.0.0.tgz#9141e94ea6765eda4925aaf062448507410bbe70"
   integrity sha512-gBfZqWg3hmCvhq6/wX5UJp4qwl6gB+NJPpOkya2Y3jWKA0HKf3UdlhIvaHq7dRaqhi4unmqaJZVEk5VpZ1vDOg==
 
-"@ckeditor/ckeditor5-ckfinder@^16.0.0":
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor5-ckfinder/-/ckeditor5-ckfinder-16.0.0.tgz#ed6147744c236cc828a07ef441dc9543ca6dcd69"
-  integrity sha512-NdA8vUj0FldCIyaN7eFnZiJtJXR4pPraIjDF9AJg+ox+ND17D6wfiZBtd0qajoiXceim60AzjaNoHCTPRGrCbg==
-  dependencies:
-    "@ckeditor/ckeditor5-adapter-ckfinder" "^16.0.0"
-    "@ckeditor/ckeditor5-core" "^16.0.0"
-    "@ckeditor/ckeditor5-image" "^16.0.0"
-    "@ckeditor/ckeditor5-link" "^16.0.0"
-    "@ckeditor/ckeditor5-ui" "^16.0.0"
-
 "@ckeditor/ckeditor5-clipboard@^16.0.0":
   version "16.0.0"
   resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor5-clipboard/-/ckeditor5-clipboard-16.0.0.tgz#8b53127194a971d60dd8c12c061d9cf7ae378ba5"
@@ -825,14 +817,6 @@
     "@ckeditor/ckeditor5-core" "^16.0.0"
     "@ckeditor/ckeditor5-engine" "^16.0.0"
     "@ckeditor/ckeditor5-utils" "^16.0.0"
-
-"@ckeditor/ckeditor5-cloud-services@^16.0.0":
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor5-cloud-services/-/ckeditor5-cloud-services-16.0.0.tgz#af44eba53395e2ffbd8538836f36a6083ad61a88"
-  integrity sha512-RH+2p1Zyy2Jp0ZJThfe6PV7jNRKqvjihEe71j0pT6WgX+PrXPILBOS750HOMwFvKAEqWS2a9XPx+R01al3HRUw==
-  dependencies:
-    "@ckeditor/ckeditor-cloud-services-core" "^16.0.0"
-    "@ckeditor/ckeditor5-core" "^16.0.0"
 
 "@ckeditor/ckeditor5-core@^16.0.0":
   version "16.0.0"
@@ -873,17 +857,6 @@
     chalk "^2.4.1"
     rimraf "^2.6.2"
     webpack-sources "^1.1.0"
-
-"@ckeditor/ckeditor5-easy-image@^16.0.0":
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor5-easy-image/-/ckeditor5-easy-image-16.0.0.tgz#8f7d116e80bed1d4b9c0fd8a01538ee6ccf8b5d1"
-  integrity sha512-DiK2e1hELuDWFTfTv0lFrYM5B+b4gIskWH+QcFzgHOHOyvUsh3TuGTMerdt3wWuv0vWXcSmnwQRUosUUiStinw==
-  dependencies:
-    "@ckeditor/ckeditor-cloud-services-core" "^16.0.0"
-    "@ckeditor/ckeditor5-cloud-services" "^16.0.0"
-    "@ckeditor/ckeditor5-core" "^16.0.0"
-    "@ckeditor/ckeditor5-image" "^16.0.0"
-    "@ckeditor/ckeditor5-upload" "^16.0.0"
 
 "@ckeditor/ckeditor5-editor-balloon@^16.0.0":
   version "16.0.0"
