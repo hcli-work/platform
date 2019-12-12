@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  resources :course_content_undos
+  resources :course_content_histories
   resources :course_contents do
     post :publish
   end
