@@ -171,12 +171,6 @@ BalloonEditor.defaultConfig = {
     },
     // This value must be kept in sync with the language defined in webpack.config.js.
     language: 'en',
-    // Autosave
-    autosave: {
-        save( editor ) {
-            return saveData( editor.getData() );
-        }
-    }
 };
 
 function addRetainedDataID(element) {
@@ -185,29 +179,6 @@ function addRetainedDataID(element) {
 }
 
 window.addRetainedDataID = addRetainedDataID;
-
-function saveData( data ) {
-    return fetch("/course_contents/1.json", {
-            method: 'PUT',
-            body: JSON.stringify({body: data}), // data can be `string` or {object}!
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': Rails.csrfToken()
-            }
-        })
-        .then(res => res.json())
-        .then(
-            (result) => {
-                console.log('saved');
-            },
-            // Note: it's important to handle errors here
-            // instead of a catch() block so that we don't swallow
-            // exceptions from actual bugs in components.
-            (error) => {
-                console.log(error);
-            }
-        );
-}
 
 class ContentEditor extends Component {
     constructor( props ) {
@@ -228,6 +199,8 @@ class ContentEditor extends Component {
             selectedElement: undefined,
         };
 
+        const saveData = this.saveData.bind( this );
+
         // The configuration of the <CKEditor> instance.
         this.editorConfig = {
             // The configuration of the ContentParts plugin. It specifies a function that will allow
@@ -240,6 +213,12 @@ class ContentEditor extends Component {
                         <ContentPartPreview id={id} {...contentPart} />,
                         domElement
                     );
+                }
+            },
+            // Autosave
+            autosave: {
+                save( editor ) {
+                    return saveData( editor.getData() );
                 }
             }
         };
@@ -255,6 +234,40 @@ class ContentEditor extends Component {
 
     showFileUpload() {
         this.fileUpload.current.click();
+    }
+
+    saveData( data ) {
+       this.setState( {
+               'saveState': 'saving',
+               'saveStateMessage': 'Saving...'
+       } );
+       return fetch("/course_contents/1.json", {
+               method: 'PUT',
+               body: JSON.stringify({body: data}), // data can be `string` or {object}!
+               headers: {
+                   'Content-Type': 'application/json',
+                   'X-CSRF-Token': Rails.csrfToken()
+               }
+           })
+           .then(res => res.json())
+           .then(
+               (result) => {
+                   this.setState( {
+                       'saveState': 'saved',
+                       'saveStateMessage': 'Saved'
+                   } );
+               },
+               // Note: it's important to handle errors here
+               // instead of a catch() block so that we don't swallow
+               // exceptions from actual bugs in components.
+               (error) => {
+                   console.log(error);
+                   this.setState( {
+                       'saveState': 'error',
+                       'saveStateMessage': 'Error!'
+                   } );
+               }
+           );
     }
 
     // A handler executed when the user types or modifies the editor content.
@@ -380,8 +393,7 @@ class ContentEditor extends Component {
             <div id="container" key="content-editor">
                 <header>
                     <h1>Braven Content Editor</h1>
-                    <span id="autosave-indicator" className="saved">Saved</span>
-                    <span id="autosave-indicator" className="saving">Saving...</span>
+                    <span id="autosave-indicator" className={this.state['saveState']}>{this.state['saveStateMessage']}</span>
 
                     <ul>
                         <li onClick={(evt) => this.handlePublish(evt)} className={this.state['isPublished'] ? "success" : ""}>
