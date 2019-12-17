@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_12_193546) do
+ActiveRecord::Schema.define(version: 2019_12_12_211536) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -58,6 +58,7 @@ ActiveRecord::Schema.define(version: 2019_12_12_193546) do
     t.integer "version"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["course_content_id", "version"], name: "index_course_content_undos_on_course_content_id_and_version", unique: true
     t.index ["course_content_id"], name: "index_course_content_undos_on_course_content_id"
   end
 
@@ -69,8 +70,6 @@ ActiveRecord::Schema.define(version: 2019_12_12_193546) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.integer "course_id"
-    # secondary_id will represent different things depending on the content_type.
-    # e.g. for modules, it will be a page ID; for assignments an assignment ID.
     t.string "secondary_id"
     t.string "course_name"
   end

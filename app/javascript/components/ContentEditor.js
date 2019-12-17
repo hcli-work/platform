@@ -39,6 +39,7 @@ import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 import SimpleUploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/simpleuploadadapter';
 import Autosave from '@ckeditor/ckeditor5-autosave/src/autosave';
+import OperationFactory from '@ckeditor/ckeditor5-engine/src/model/operation/operationfactory';
 
 // CKEditor plugin implementing a content part widget to be used in the editor content.
 import ContentPartPreviewEditing from '../ckeditor/contentpartpreviewediting';
@@ -199,6 +200,7 @@ class ContentEditor extends Component {
             selectedElement: undefined,
         };
 
+        // Need to be able to access this inside the config below.
         const saveData = this.saveData.bind( this );
 
         // The configuration of the <CKEditor> instance.
@@ -225,6 +227,7 @@ class ContentEditor extends Component {
 
         this.handleEditorDataChange = this.handleEditorDataChange.bind( this );
         this.handleEditorFocusChange = this.handleEditorFocusChange.bind( this );
+
         this.handleEditorInit = this.handleEditorInit.bind( this );
 
         // Non-CKE UI functions.
@@ -238,10 +241,42 @@ class ContentEditor extends Component {
 
     saveData( data ) {
        this.setState( {
-               'saveState': 'saving',
-               'saveStateMessage': 'Saving...'
+           'saveState': 'saving',
+           'saveStateMessage': 'Saving...'
        } );
-       return fetch("/course_contents/1.json", {
+
+       // Save undo stack!
+       // FIXME: Batch these and save only new ones.
+       this.editor.model.document.history.getOperations().forEach((operation) => {
+           fetch("/course_content_undos.json", {
+                   method: 'POST',
+                   body: JSON.stringify({
+                       course_content_id: this.props.course_content['id'],
+                       operation: JSON.stringify(operation.toJSON()),
+                       version: operation.baseVersion
+                   }),
+                   headers: {
+                       'Content-Type': 'application/json',
+                       'X-CSRF-Token': Rails.csrfToken()
+                   }
+               })
+               .then(res => res.json())
+               .then(
+                   (result) => {
+                       console.log('saved undo stack');
+                   },
+                   // Note: it's important to handle errors here
+                   // instead of a catch() block so that we don't swallow
+                   // exceptions from actual bugs in components.
+                   (error) => {
+                       // FIXME: silently ignore because this is probably just a unique violation
+                       console.log(error);
+                   }
+               );
+        });
+
+       // Save contents.
+       return fetch(`/course_contents/${this.props.course_content['id']}.json`, {
                method: 'PUT',
                body: JSON.stringify({body: data}), // data can be `string` or {object}!
                headers: {
@@ -268,6 +303,10 @@ class ContentEditor extends Component {
                    } );
                }
            );
+    }
+
+    showFileUpload() {
+        this.fileUpload.current.click();
     }
 
     // A handler executed when the user types or modifies the editor content.
@@ -349,6 +388,26 @@ class ContentEditor extends Component {
         editor.editing.view.document.selection.on('change', this.handleEditorFocusChange);
         this.handleEditorFocusChange();
 
+        // Populate undo history.
+        console.log(this.props.undos);
+        //this.editor.model.document.history._operations.pop();
+        var batch = this.editor.model.createBatch('transparent');
+        this.props.undos.sort((a, b)=>{return parseInt(a['version']) - parseInt(b['version'])}).forEach((operation_data) => {
+            // TODO: add the operation to a batch, then apply it? Make sure the batch is 'transparent'.
+            if (operation_data.version == 0) {
+                return;
+            }
+            var operation = OperationFactory.fromJSON(JSON.parse(operation_data.operation), this.editor.model.document);
+            console.log(operation);
+            this.editor.model.document.history.addOperation(operation);
+            batch.addOperation(operation);
+        });
+        console.log(batch);
+        if (batch.operations.length > 0) {
+            this.editor.model.document.version = batch.operations.length + 1;
+            this.editor.commands.get('undo').addBatch(batch);
+        }
+
         // CKEditor 5 inspector allows you to take a peek into the editor's model and view
         // data layers. Use it to debug the application and learn more about the editor.
         // Disable unless debug mode is enabled.
@@ -358,7 +417,7 @@ class ContentEditor extends Component {
     }
 
     handlePublish( evt ) {
-        fetch("/course_contents/1/publish.json", {
+        fetch(`/course_contents/${this.props.course_content['id']}/publish.json`, {
                 method: 'POST',
                 body: JSON.stringify(this.props.course_content), // data can be `string` or {object}!
                 headers: {

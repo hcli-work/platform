@@ -19,8 +19,9 @@
     </div>
   <% end %>
 
-  <div class="field" >
-    <%= react_component('ContentEditor', { course_content: course_content,
+  <div class="field">
+    <%= react_component('ContentEditor', { course_content: course_content, 
+        undos: course_content.course_content_undo,
         contentParts: [
             {
                 id: 1,
