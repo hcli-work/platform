@@ -247,6 +247,10 @@ class ContentEditor extends Component {
 
        // Save undo stack!
        // FIXME: Batch these and save only new ones.
+       // hash key:operation value:saved?
+       // only re-send things that are false
+       // mark them true in the 200 block
+       // use the undo command internal batch stacks
        this.editor.model.document.history.getOperations().forEach((operation) => {
            fetch("/course_content_undos.json", {
                    method: 'POST',
@@ -401,10 +405,11 @@ class ContentEditor extends Component {
             console.log(operation);
             this.editor.model.document.history.addOperation(operation);
             batch.addOperation(operation);
+            this.editor.model.document.version = Math.max(this.editor.model.document.version || 0, operation.baseVersion);
         });
         console.log(batch);
         if (batch.operations.length > 0) {
-            this.editor.model.document.version = batch.operations.length + 1;
+            this.editor.model.document.version = this.editor.model.document.version + 1;
             this.editor.commands.get('undo').addBatch(batch);
         }
 
