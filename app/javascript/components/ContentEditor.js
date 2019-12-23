@@ -424,21 +424,15 @@ class ContentEditor extends Component {
                             <TabPanel>Not Implemented</TabPanel>
                         </Tabs>
                     </div>
-                    <Tabs>
+                    <Tabs defaultIndex={1}>
                         <div id="workspace">
                             <TabList id="view-mode">
-                                <Tab className="active">Design</Tab>
-                                <Tab>Code</Tab>
+                                <Tab>Design</Tab>
+                                <Tab className="active">Code</Tab>
                             </TabList>
                             <TabPanel>
                                 <div id="wysiwyg-container">
-                                    <CKEditor
-                                        editor={BalloonEditor}
-                                        data={this.state.editorData}
-                                        config={this.editorConfig}
-                                        onChange={this.handleEditorDataChange}
-                                        onInit={this.handleEditorInit}
-                                    />
+                                    Disabled
                                 </div>
                                 <textarea value={this.state.editorData}
                                           className="secret-html"

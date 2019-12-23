@@ -18,6 +18,14 @@ class CanvasAPI
     put("/courses/#{course_id}/pages/#{wiki_page_id}", body)
   end
 
+  def update_assignment(course_id, assignment_id, assignment_description)
+    body = {
+      'assignment[description]' => assignment_description,
+    }
+
+    put("/courses/#{course_id}/assignments/#{assignment_id}", body)
+  end
+
   def get(path, params={}, headers={})
     RestClient.get("#{@api_url}#{path}", {params: params}.merge(@global_headers.merge(headers)))
   end
