@@ -23,6 +23,7 @@ class CanvasAPI
       'assignment[description]' => assignment_description,
     }
 
+    puts("#{@api_url}/courses/#{course_id}/assignments/#{assignment_id}")
     put("/courses/#{course_id}/assignments/#{assignment_id}", body)
   end
 
