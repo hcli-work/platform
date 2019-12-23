@@ -6,6 +6,9 @@ class CourseContent < ApplicationRecord
       response = CanvasProdClient.update_assignment(params[:course_id], params[:secondary_id], params[:body])
     end
 
+    puts(response.code)
+    puts(response.body)
+
     response.code == 200
   end
 end
