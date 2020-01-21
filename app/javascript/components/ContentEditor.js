@@ -230,6 +230,8 @@ class ContentEditor extends Component {
 
         this.handleEditorInit = this.handleEditorInit.bind( this );
 
+        this.displayStatus = this.displayStatus.bind( this );
+
         // Non-CKE UI functions.
         this.fileUpload = React.createRef();
         this.showFileUpload = this.showFileUpload.bind(this);
@@ -240,11 +242,6 @@ class ContentEditor extends Component {
     }
 
     saveData( data ) {
-       this.setState( {
-           'saveState': 'saving',
-           'saveStateMessage': 'Saving...'
-       } );
-
        // Save undo stack!
        // FIXME: Batch these and save only new ones.
        // hash key:operation value:saved?
@@ -291,10 +288,8 @@ class ContentEditor extends Component {
            .then(res => res.json())
            .then(
                (result) => {
-                   this.setState( {
-                       'saveState': 'saved',
-                       'saveStateMessage': 'Saved'
-                   } );
+                   // Success!
+                   // TODO: Do we need to do something here?
                },
                // Note: it's important to handle errors here
                // instead of a catch() block so that we don't swallow
@@ -307,6 +302,29 @@ class ContentEditor extends Component {
                    } );
                }
            );
+    }
+
+    // Update the "Status: Saving..." info.
+    displayStatus( editor ) {
+        const pendingActions = editor.plugins.get( 'PendingActions' );
+
+        pendingActions.on( 'change:hasAny', ( evt, propertyName, newValue ) => {
+            if ( newValue ) {
+                this.setState( {
+                    'saveState': 'saving',
+                    'saveStateMessage': 'Saving...'
+                } );
+            } else {
+                // Only change state to 'saved' if it was 'saving', so we don't overwrite
+                // an 'error' state.
+                if ( this.state['saveState'] === 'saving' ) {
+                    this.setState( {
+                        'saveState': 'saved',
+                        'saveStateMessage': 'Saved'
+                    } );
+                }
+            }
+        } );
     }
 
     showFileUpload() {
@@ -387,6 +405,8 @@ class ContentEditor extends Component {
         this.setState( {
             editorData: editor.getData()
         } );
+
+        this.displayStatus( editor );
 
         // Attach the focus handler, and call it once to set the initial state of the right sidebar buttons.
         editor.editing.view.document.selection.on('change', this.handleEditorFocusChange);
