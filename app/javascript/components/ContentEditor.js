@@ -248,32 +248,35 @@ class ContentEditor extends Component {
        // only re-send things that are false
        // mark them true in the 200 block
        // use the undo command internal batch stacks
-       this.editor.model.document.history.getOperations().forEach((operation) => {
-           fetch("/course_content_undos.json", {
-                   method: 'POST',
-                   body: JSON.stringify({
-                       course_content_id: this.props.course_content['id'],
-                       operation: JSON.stringify(operation.toJSON()),
-                       version: operation.baseVersion
-                   }),
-                   headers: {
-                       'Content-Type': 'application/json',
-                       'X-CSRF-Token': Rails.csrfToken()
-                   }
-               })
-               .then(res => res.json())
-               .then(
-                   (result) => {
-                       console.log('saved undo stack');
-                   },
-                   // Note: it's important to handle errors here
-                   // instead of a catch() block so that we don't swallow
-                   // exceptions from actual bugs in components.
-                   (error) => {
-                       // FIXME: silently ignore because this is probably just a unique violation
-                       console.log(error);
-                   }
-               );
+       this.editor.commands.get('undo')._stack.forEach((elem) => {
+           elem.batch.operations.forEach((operation) => {
+               fetch("/course_content_undos.json", {
+                       method: 'POST',
+                       body: JSON.stringify({
+                           course_content_id: this.props.course_content['id'],
+                           operation: JSON.stringify(operation.toJSON()),
+                           batch_version: operation.batch.baseVersion,
+                           version: operation.baseVersion
+                       }),
+                       headers: {
+                           'Content-Type': 'application/json',
+                           'X-CSRF-Token': Rails.csrfToken()
+                       }
+                   })
+                   .then(res => res.json())
+                   .then(
+                       (result) => {
+                           console.log('saved undo stack');
+                       },
+                       // Note: it's important to handle errors here
+                       // instead of a catch() block so that we don't swallow
+                       // exceptions from actual bugs in components.
+                       (error) => {
+                           // FIXME: silently ignore because this is probably just a unique violation
+                           console.log(error);
+                       }
+                   );
+           });
         });
 
        // Save contents.
@@ -416,16 +419,24 @@ class ContentEditor extends Component {
         console.log(this.props.undos);
         //this.editor.model.document.history._operations.pop();
         var batch = this.editor.model.createBatch('transparent');
+        console.log(batch);
         this.props.undos.sort((a, b)=>{return parseInt(a['version']) - parseInt(b['version'])}).forEach((operation_data) => {
             // TODO: add the operation to a batch, then apply it? Make sure the batch is 'transparent'.
             if (operation_data.version == 0) {
                 return;
             }
+
+            // new batch
+            if ( batch.baseVersion && batch.baseVersion != operation_data.batch_version ) {
+                this.editor.commands.get('undo').addBatch(batch);
+                batch = this.editor.model.createBatch('transparent');
+            }
+
             var operation = OperationFactory.fromJSON(JSON.parse(operation_data.operation), this.editor.model.document);
-            console.log(operation);
             this.editor.model.document.history.addOperation(operation);
             batch.addOperation(operation);
             this.editor.model.document.version = Math.max(this.editor.model.document.version || 0, operation.baseVersion);
+            console.log(operation);
         });
         console.log(batch);
         if (batch.operations.length > 0) {

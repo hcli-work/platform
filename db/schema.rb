@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_12_211536) do
+ActiveRecord::Schema.define(version: 2020_01_21_203650) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -58,6 +58,7 @@ ActiveRecord::Schema.define(version: 2019_12_12_211536) do
     t.integer "version"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "batch_version"
     t.index ["course_content_id", "version"], name: "index_course_content_undos_on_course_content_id_and_version", unique: true
     t.index ["course_content_id"], name: "index_course_content_undos_on_course_content_id"
   end

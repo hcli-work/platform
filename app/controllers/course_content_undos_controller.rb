@@ -69,6 +69,6 @@ class CourseContentUndosController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def course_content_undo_params
-      params.require(:course_content_undo).permit(:course_content_id, :operation, :version)
+      params.require(:course_content_undo).permit(:course_content_id, :operation, :version, :batch_version)
     end
 end
