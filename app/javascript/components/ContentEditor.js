@@ -7,6 +7,9 @@ import Rails from '@rails/ujs';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 //import 'react-tabs/style/react-tabs.css';
 
+// Non-ckeditor Node imports
+const uuidv4 = require('uuid/v4');
+
 // The official CKEditor 5 instance inspector. It helps understand the editor view and model.
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 
@@ -18,8 +21,6 @@ import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
 import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote';
 import BlockToolbar from '@ckeditor/ckeditor5-ui/src/toolbar/block/blocktoolbar';
 import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
-import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
 import Heading from '@ckeditor/ckeditor5-heading/src/heading';
 import Image from '@ckeditor/ckeditor5-image/src/image';
 import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
@@ -36,10 +37,26 @@ import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefrom
 import Table from '@ckeditor/ckeditor5-table/src/table';
 import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
-import UploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapter';
+import SimpleUploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/simpleuploadadapter';
+
 
 // CKEditor plugin implementing a content part widget to be used in the editor content.
 import ContentPartPreviewEditing from '../ckeditor/contentpartpreviewediting';
+import ContentCommonEditing from '../ckeditor/contentcommonediting';
+import ChecklistQuestionEditing from '../ckeditor/checklistquestionediting';
+import RadioQuestionEditing from '../ckeditor/radioquestionediting';
+import TextAreaQuestionEditing from '../ckeditor/textareaquestionediting';
+import RateThisModuleQuestionEditing from '../ckeditor/ratethismodulequestionediting';
+import MatchingQuestionEditing from '../ckeditor/matchingquestionediting';
+import TableContentEditing from '../ckeditor/tablecontentediting';
+import BlockquoteContentEditing from '../ckeditor/blockquotecontentediting';
+import IFrameContentEditing from '../ckeditor/iframecontentediting';
+import VideoContentEditing from '../ckeditor/videocontentediting';
+import SectionEditing from '../ckeditor/sectionediting';
+
+import Tooltip from '../ckeditor/tooltip';
+import ImageLink from '../ckeditor/imagelink';
+import CustomElementAttributePreservation from '../ckeditor/customelementattributepreservation';
 
 // React components to render the list of content parts and the content part preview.
 import ContentPartList from './ContentPartList';
@@ -53,8 +70,6 @@ BalloonEditor.builtinPlugins = [
     BlockQuote,
     BlockToolbar,
     Bold,
-    CKFinder,
-    EasyImage,
     Heading,
     Image,
     ImageCaption,
@@ -64,19 +79,33 @@ BalloonEditor.builtinPlugins = [
     Indent,
     Italic,
     Link,
+    Tooltip,
+    ImageLink,
     List,
     MediaEmbed,
     Paragraph,
     PasteFromOffice,
     Table,
     TableToolbar,
-    UploadAdapter,
+    SimpleUploadAdapter,
 
-    ContentPartPreviewEditing
+    ContentPartPreviewEditing,
+    ContentCommonEditing,
+    ChecklistQuestionEditing,
+    RadioQuestionEditing,
+    TextAreaQuestionEditing,
+    RateThisModuleQuestionEditing,
+    MatchingQuestionEditing,
+    TableContentEditing,
+    BlockquoteContentEditing,
+    IFrameContentEditing,
+    VideoContentEditing,
+    SectionEditing,
 ];
 
 // Editor configuration.
 BalloonEditor.defaultConfig = {
+    extraPlugins: [ CustomElementAttributePreservation ],
     blockToolbar: [
         'heading',
         '|',
@@ -101,6 +130,7 @@ BalloonEditor.defaultConfig = {
             'bold',
             'italic',
             'link',
+            'addTooltip',
             'bulletedList',
             'numberedList',
             '|',
@@ -129,9 +159,26 @@ BalloonEditor.defaultConfig = {
             'mergeTableCells'
         ]
     },
+    simpleUpload: {
+        // The URL that the images are uploaded to.
+        uploadUrl: '/image_upload_api',
+
+        // Headers sent along with the XMLHttpRequest to the upload server.
+        headers: {
+            //Authorization: 'Bearer <JSON Web Token>'
+            'X-CSRF-Token': Rails.csrfToken(),
+        }
+    },
     // This value must be kept in sync with the language defined in webpack.config.js.
     language: 'en'
 };
+
+function addRetainedDataID(element) {
+   console.log('todo');
+   return uuidv4();
+}
+
+window.addRetainedDataID = addRetainedDataID;
 
 class ContentEditor extends Component {
     constructor( props ) {
@@ -145,7 +192,8 @@ class ContentEditor extends Component {
             // The initial editor data. It is bound to the editor instance and will change as
             // the user types and modifies the content of the editor.
             editorData: props.course_content['body'] || "",
-            isPublished: false
+            isPublished: false,
+            enabledCommands: [],
         };
 
         // The configuration of the <CKEditor> instance.
@@ -165,8 +213,17 @@ class ContentEditor extends Component {
         };
 
         this.handleEditorDataChange = this.handleEditorDataChange.bind( this );
+        this.handleEditorFocusChange = this.handleEditorFocusChange.bind( this );
         this.handleEditorInit = this.handleEditorInit.bind( this );
+
+        this.fileUpload = React.createRef();
+        this.showFileUpload = this.showFileUpload.bind(this);
+
     }
+
+  showFileUpload() {
+    this.fileUpload.current.click();
+  }
 
     // A handler executed when the user types or modifies the editor content.
     // It updates the state of the application.
@@ -174,6 +231,15 @@ class ContentEditor extends Component {
         this.setState( {
             editorData: editor.getData(),
             isPublished: false
+        } );
+    }
+
+    // A handler executed when the current selection changes inside the CKEditor view.
+    // It propogates state changes from CKEditor up to this React component, so we can
+    // update the UI accordingly.
+    handleEditorFocusChange( ) {
+        this.setState( {
+            enabledCommands: [...this.editor.commands.names()].filter(x => this.editor.commands.get(x).isEnabled)
         } );
     }
 
@@ -191,9 +257,16 @@ class ContentEditor extends Component {
     handleEditorInit( editor ) {
         this.editor = editor;
 
+        // Store a reference to the editor in the window, just to make debugging easier.
+        window.editor = editor;
+
         this.setState( {
             editorData: editor.getData()
         } );
+
+        // Attach the focus handler, and call it once to set the initial state of the right sidebar buttons.
+        editor.editing.view.document.selection.on('change', this.handleEditorFocusChange);
+        this.handleEditorFocusChange();
 
         // CKEditor 5 inspector allows you to take a peek into the editor's model and view
         // data layers. Use it to debug the application and learn more about the editor.
@@ -219,6 +292,7 @@ class ContentEditor extends Component {
                 // Note: it's important to handle errors here
                 // instead of a catch() block so that we don't swallow
                 // exceptions from actual bugs in components.
+                // TODO: We'll eventually want to actually handle errors, not just log them.
                 (error) => {
                     console.log(error);
                 }
@@ -272,14 +346,131 @@ class ContentEditor extends Component {
 
                             <TabPanel>
                                 <div id="toolbar-components">
-                                    <ContentPartList
-                                        key="content-part-list"
-                                        contentParts={this.props.contentParts}
-                                        onClick={( id ) => {
-                                            this.editor.execute( 'insertContentPart', id );
-                                            this.editor.editing.view.focus();
-                                        }}
-                                    />
+                                    <ul key="content-part-list" id="widget-list">
+                                        <ContentPartPreview
+                                            key="insertSection"
+                                            enabled={this.state.enabledCommands.includes('insertSection')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertSection', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Section', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertChecklistQuestion"
+                                            enabled={this.state.enabledCommands.includes('insertChecklistQuestion')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertChecklistQuestion', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Checklist Question', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertRadioQuestion"
+                                            enabled={this.state.enabledCommands.includes('insertRadioQuestion')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertRadioQuestion', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Radio Question', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertMatchingQuestion"
+                                            enabled={this.state.enabledCommands.includes('insertMatchingQuestion')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertMatchingQuestion', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Matching Question', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertTextAreaQuestion"
+                                            enabled={this.state.enabledCommands.includes('insertTextAreaQuestion')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertTextAreaQuestion', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Text Area Question', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertTextArea"
+                                            enabled={this.state.enabledCommands.includes('insertTextArea')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertTextArea', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Text Area', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertSlider"
+                                            enabled={this.state.enabledCommands.includes('insertSlider')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertSlider', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Slider', id: uuidv4()}}
+                                        />
+                                        <input
+                                            type="file"
+                                            style={{ display: "none" }}
+                                            ref={this.fileUpload}
+                                            onChange={e => {
+                                                this.editor.execute( 'imageUpload', {file: e.target.files[0]} );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                        />
+                                        <ContentPartPreview
+                                            key="imageUpload"
+                                            enabled={this.state.enabledCommands.includes('imageUpload')}
+                                            onClick={this.showFileUpload}
+                                            {...{name: 'Image', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertTableContent"
+                                            enabled={this.state.enabledCommands.includes('insertTableContent')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertTableContent', id , {rows: 2, columns: 2});
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Table', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertBlockquoteContent"
+                                            enabled={this.state.enabledCommands.includes('insertBlockquoteContent')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertBlockquoteContent', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Quote', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertIFrameContent"
+                                            enabled={this.state.enabledCommands.includes('insertIFrameContent')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertIFrameContent', id, 'http://example.com' );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'iFrame', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertVideoContent"
+                                            enabled={this.state.enabledCommands.includes('insertVideoContent')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertVideoContent', id, 'https://www.youtube.com/embed/yyRrKMb8oIg?rel=0' );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Video', id: uuidv4()}}
+                                        />
+                                        <ContentPartPreview
+                                            key="insertRateThisModuleQuestion"
+                                            enabled={this.state.enabledCommands.includes('insertRateThisModuleQuestion')}
+                                            onClick={( id ) => {
+                                                this.editor.execute( 'insertRateThisModuleQuestion', id );
+                                                this.editor.editing.view.focus();
+                                            }}
+                                            {...{name: 'Rate This Module', id: uuidv4()}}
+                                        />
+                                    </ul>
                                 </div>
                             </TabPanel>
                             <TabPanel>Not Implemented</TabPanel>
