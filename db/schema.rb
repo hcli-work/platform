@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_23_202027) do
+ActiveRecord::Schema.define(version: 2020_02_10_144001) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -34,6 +34,14 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "cohorts", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "section_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["name"], name: "index_cohorts_on_name", unique: true
+  end
+
   create_table "course_contents", force: :cascade do |t|
     t.string "title"
     t.text "body"
@@ -44,6 +52,15 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.integer "course_id"
     t.string "secondary_id"
     t.string "course_name"
+  end
+
+  create_table "courses", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "organization_id", null: false
+    t.string "term", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["name", "term"], name: "index_courses_on_name_and_term", unique: true
   end
 
   create_table "emails", force: :cascade do |t|
@@ -99,6 +116,13 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_majors_on_name"
     t.index ["parent_id"], name: "index_majors_on_parent_id"
+  end
+
+  create_table "organizations", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["name"], name: "index_organizations_on_name", unique: true
   end
 
   create_table "phones", force: :cascade do |t|
@@ -159,6 +183,16 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.index ["name"], name: "index_roles_on_name", unique: true
   end
 
+  create_table "sections", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "day_of_week", null: false
+    t.time "time_of_day", null: false
+    t.integer "course_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["day_of_week", "time_of_day"], name: "index_sections_on_day_of_week_and_time_of_day", unique: true
+  end
+
   create_table "service_tickets", force: :cascade do |t|
     t.string "ticket", null: false
     t.string "service", null: false
@@ -181,6 +215,15 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.string "extra_attributes", null: false
   end
 
+  create_table "user_cohorts", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "cohort_id", null: false
+    t.string "type", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_id", "cohort_id"], name: "index_user_cohorts_on_user_id_and_cohort_id", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email"
     t.boolean "admin", default: false
@@ -195,4 +238,9 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.index ["email"], name: "index_users_on_email"
   end
 
+  add_foreign_key "cohorts", "sections"
+  add_foreign_key "courses", "organizations"
+  add_foreign_key "sections", "courses"
+  add_foreign_key "user_cohorts", "cohorts"
+  add_foreign_key "user_cohorts", "users"
 end

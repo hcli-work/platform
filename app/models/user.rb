@@ -7,6 +7,11 @@ class User < ApplicationRecord
   has_many :programs, through: :program_memberships
   has_many :roles, through: :program_memberships
 
+  has_many :user_cohorts
+  has_many :cohorts,  through: :user_cohorts
+  has_many :sections, through: :cohorts
+  has_many :courses, through: :sections
+
   before_create :attempt_admin_set, unless: :admin?
   
   validates :email, uniqueness: true
