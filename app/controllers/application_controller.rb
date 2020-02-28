@@ -2,6 +2,12 @@ require 'rubycas-server-core/tickets'
 require 'dry_crud'
 
 class ApplicationController < ActionController::Base
+
+  # TODO: have to put this here in order to exempt other controllers. It should be
+  # off by default so I don't know why things where throwing at all. Make sure this doesn't break
+  # CAS login.
+  protect_from_forgery
+
   include RubyCAS::Server::Core::Tickets
   include DryCrud::Controllers
 

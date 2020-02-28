@@ -56,6 +56,13 @@ Rails.application.routes.draw do
 
   root to: "home#welcome"
 
+  # Canvas LTI extension routes
+  resources :lti_editor_button, only: [:index, :create]         # https://canvas.instructure.com/doc/api/file.editor_button_placement.html
+  resources :lti_link_selection, only: [:index, :create]        # https://canvas.instructure.com/doc/api/file.link_selection_placement.html
+  resources :lti_homework_submission, only: [:index, :create]   # https://canvas.instructure.com/doc/api/file.homework_submission_tools.html
+  resources :lti_course_navigation, only: [:index, :create]     # https://canvas.instructure.com/doc/api/file.navigation_tools.html
+  resources :lti_account_navigation, only: [:index, :create]    # https://canvas.instructure.com/doc/api/file.navigation_tools.html
+  resources :lti_user_navigation, only: [:index, :create]        # https://canvas.instructure.com/doc/api/file.navigation_tools.html
 
   # RubyCAS Routes
   resources :cas, except: [:show]
