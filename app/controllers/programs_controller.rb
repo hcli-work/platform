@@ -1,15 +1,17 @@
 class ProgramsController < ApplicationController
-  before_action :set_program, only: [:edit, :update, :destroy]
 
   # GET /programs
   # GET /programs.json
   def index
-    @programs = Program.all
+  end
+
+  # GET /programs/1
+  # GET /programs/1.json
+  def show
   end
 
   # GET /programs/new
   def new
-    @program = Program.new
   end
 
   # GET /programs/1/edit
@@ -20,7 +22,6 @@ class ProgramsController < ApplicationController
   # POST /programs.json
   def create
     @program = Program.new(program_params)
-
     respond_to do |format|
       if @program.save
         format.html { redirect_to programs_path, notice: 'Program was successfully created.' }
@@ -58,13 +59,8 @@ class ProgramsController < ApplicationController
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
-  def set_program
-    @program = Program.find(params[:id])
-  end
-
   # Never trust parameters from the scary internet, only allow the white list through.
   def program_params
-    params.require(:program).permit(:name)
+    params.require(:program).permit(:name, :term, :organization_id)
   end
 end

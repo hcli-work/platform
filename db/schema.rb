@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_23_202027) do
+ActiveRecord::Schema.define(version: 2020_02_20_212829) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -34,6 +34,15 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "course_content_histories", force: :cascade do |t|
+    t.bigint "course_content_id", null: false
+    t.string "title"
+    t.text "body"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["course_content_id"], name: "index_course_content_histories_on_course_content_id"
+  end
+
   create_table "course_contents", force: :cascade do |t|
     t.string "title"
     t.text "body"
@@ -53,6 +62,15 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.index ["value"], name: "index_emails_on_value"
   end
 
+  create_table "grade_categories", force: :cascade do |t|
+    t.bigint "program_id", null: false
+    t.string "name", null: false
+    t.float "percent_of_grade"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["program_id"], name: "index_grade_categories_on_program_id"
+  end
+
   create_table "industries", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -65,6 +83,27 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_interests_on_name"
+  end
+
+  create_table "lesson_submissions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "lesson_id", null: false
+    t.float "points_received"
+    t.datetime "submitted_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["lesson_id"], name: "index_lesson_submissions_on_lesson_id"
+    t.index ["user_id"], name: "index_lesson_submissions_on_user_id"
+  end
+
+  create_table "lessons", force: :cascade do |t|
+    t.bigint "grade_category_id", null: false
+    t.string "name", null: false
+    t.integer "points_possible", null: false
+    t.float "percent_of_grade_category", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["grade_category_id"], name: "index_lessons_on_grade_category_id"
   end
 
   create_table "location_relationships", id: false, force: :cascade do |t|
@@ -92,6 +131,15 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.string "client_hostname", null: false
   end
 
+  create_table "logistics", force: :cascade do |t|
+    t.string "day_of_week", null: false
+    t.string "time_of_day", null: false
+    t.integer "program_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["day_of_week", "time_of_day", "program_id"], name: "index_logistics_on_day_of_week_and_time_of_day_and_program_id", unique: true
+  end
+
   create_table "majors", force: :cascade do |t|
     t.string "name"
     t.integer "parent_id"
@@ -99,6 +147,13 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_majors_on_name"
     t.index ["parent_id"], name: "index_majors_on_parent_id"
+  end
+
+  create_table "organizations", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["name"], name: "index_organizations_on_name", unique: true
   end
 
   create_table "phones", force: :cascade do |t|
@@ -139,7 +194,35 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "term", null: false
+    t.integer "organization_id", null: false
+    t.string "type"
+    t.index ["name", "term", "organization_id"], name: "index_programs_on_name_and_term_and_organization_id", unique: true
     t.index ["name"], name: "index_programs_on_name", unique: true
+  end
+
+  create_table "project_submissions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "project_id", null: false
+    t.float "points_received"
+    t.datetime "submitted_at"
+    t.datetime "graded_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["project_id"], name: "index_project_submissions_on_project_id"
+    t.index ["user_id"], name: "index_project_submissions_on_user_id"
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.bigint "grade_category_id", null: false
+    t.string "name", null: false
+    t.integer "points_possible", null: false
+    t.float "percent_of_grade_category", null: false
+    t.boolean "grades_muted", default: false, null: false
+    t.datetime "grades_published_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["grade_category_id"], name: "index_projects_on_grade_category_id"
   end
 
   create_table "proxy_granting_tickets", force: :cascade do |t|
@@ -157,6 +240,71 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_roles_on_name", unique: true
+  end
+
+  create_table "rubric_grades", force: :cascade do |t|
+    t.bigint "project_submission_id", null: false
+    t.bigint "rubric_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["project_submission_id"], name: "index_rubric_grades_on_project_submission_id", unique: true
+    t.index ["rubric_id"], name: "index_rubric_grades_on_rubric_id"
+  end
+
+  create_table "rubric_row_categories", force: :cascade do |t|
+    t.bigint "rubric_id", null: false
+    t.string "name", null: false
+    t.integer "position", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["rubric_id"], name: "index_rubric_row_categories_on_rubric_id"
+  end
+
+  create_table "rubric_row_grades", force: :cascade do |t|
+    t.bigint "rubric_grade_id", null: false
+    t.bigint "rubric_row_id", null: false
+    t.integer "points_given"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["rubric_grade_id"], name: "index_rubric_row_grades_on_rubric_grade_id"
+    t.index ["rubric_row_id"], name: "index_rubric_row_grades_on_rubric_row_id"
+  end
+
+  create_table "rubric_row_ratings", force: :cascade do |t|
+    t.bigint "rubric_row_id", null: false
+    t.string "description", null: false
+    t.integer "points_value", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["rubric_row_id"], name: "index_rubric_row_ratings_on_rubric_row_id"
+  end
+
+  create_table "rubric_rows", force: :cascade do |t|
+    t.bigint "rubric_row_category_id", null: false
+    t.string "criterion", null: false
+    t.integer "points_possible", null: false
+    t.integer "position", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["rubric_row_category_id"], name: "index_rubric_rows_on_rubric_row_category_id"
+  end
+
+  create_table "rubrics", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.string "name"
+    t.integer "points_possible", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["project_id"], name: "index_rubrics_on_project_id", unique: true
+  end
+
+  create_table "sections", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "logistic_id", null: false
+    t.integer "program_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["name", "program_id"], name: "index_sections_on_name_and_program_id", unique: true
   end
 
   create_table "service_tickets", force: :cascade do |t|
@@ -181,6 +329,17 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.string "extra_attributes", null: false
   end
 
+  create_table "user_sections", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "section_id", null: false
+    t.string "type", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["section_id"], name: "index_user_sections_on_section_id"
+    t.index ["user_id", "section_id"], name: "index_user_sections_on_user_id_and_section_id", unique: true
+    t.index ["user_id"], name: "index_user_sections_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email"
     t.boolean "admin", default: false
@@ -195,4 +354,26 @@ ActiveRecord::Schema.define(version: 2020_01_23_202027) do
     t.index ["email"], name: "index_users_on_email"
   end
 
+  add_foreign_key "course_content_histories", "course_contents"
+  add_foreign_key "grade_categories", "programs"
+  add_foreign_key "lesson_submissions", "lessons"
+  add_foreign_key "lesson_submissions", "users"
+  add_foreign_key "lessons", "grade_categories"
+  add_foreign_key "logistics", "programs"
+  add_foreign_key "programs", "organizations"
+  add_foreign_key "project_submissions", "projects"
+  add_foreign_key "project_submissions", "users"
+  add_foreign_key "projects", "grade_categories"
+  add_foreign_key "rubric_grades", "project_submissions"
+  add_foreign_key "rubric_grades", "rubrics"
+  add_foreign_key "rubric_row_categories", "rubrics"
+  add_foreign_key "rubric_row_grades", "rubric_grades"
+  add_foreign_key "rubric_row_grades", "rubric_rows"
+  add_foreign_key "rubric_row_ratings", "rubric_rows"
+  add_foreign_key "rubric_rows", "rubric_row_categories"
+  add_foreign_key "rubrics", "projects"
+  add_foreign_key "sections", "logistics"
+  add_foreign_key "sections", "programs"
+  add_foreign_key "user_sections", "sections"
+  add_foreign_key "user_sections", "users"
 end

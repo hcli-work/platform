@@ -1,4 +1,5 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
+import { enablePlaceholder } from '@ckeditor/ckeditor5-engine/src/view/placeholder';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget/src/utils';
 import Widget from '@ckeditor/ckeditor5-widget/src/widget';
 import InsertSectionCommand from './insertsectioncommand';
@@ -19,14 +20,8 @@ export default class SectionEditing extends Plugin {
         const schema = this.editor.model.schema;
 
         schema.register( 'section', {
-            //isObject: true,
-
             allowIn: '$root',
-
-            // Allow content which is allowed in the root (e.g. paragraphs).
             allowContentOf: '$root',
-
-            allowAttributes: [ 'id' ]
         } );
 
         schema.addChildCheck( ( context, childDefinition ) => {
@@ -40,6 +35,7 @@ export default class SectionEditing extends Plugin {
     _defineConverters() {
         const editor = this.editor;
         const conversion = editor.conversion;
+        const { editing, data, model } = editor;
 
         // <section> converters
         conversion.for( 'upcast' ).elementToElement( {
@@ -48,32 +44,31 @@ export default class SectionEditing extends Plugin {
                 classes: ['content-section']
             },
             model: ( viewElement, modelWriter ) => {
-                // Read the "data-id" attribute from the view and set it as the "id" in the model.
-                return modelWriter.createElement( 'section', {
-                    id: viewElement.getAttribute( 'data-id' )
-                } );
+                return modelWriter.createElement( 'section' );
             }
         } );
         conversion.for( 'dataDowncast' ).elementToElement( {
             model: 'section',
             view: ( modelElement, viewWriter ) => {
-                return viewWriter.createEditableElement( 'section', {
-                    class: 'content-section',
-                    'data-id': modelElement.getAttribute( 'id' )
+                return viewWriter.createContainerElement( 'section', {
+                    'class': 'content-section',
                 } );
             }
         } );
         conversion.for( 'editingDowncast' ).elementToElement( {
             model: 'section',
             view: ( modelElement, viewWriter ) => {
-                const id = modelElement.getAttribute( 'id' );
-
                 const section = viewWriter.createContainerElement( 'section', {
-                    class: 'content-section',
-                    'data-id': id
+                    'class': 'content-section',
                 } );
 
-                // Note: sections are not converted into widgets! They're just an element.
+                enablePlaceholder( {
+                    view: editing.view,
+                    element: section,
+                    text: '[Empty section]',
+                    isDirectHost: false
+                } );
+
                 return section;
             }
         } );
