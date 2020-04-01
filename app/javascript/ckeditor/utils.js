@@ -20,5 +20,25 @@ export function preventCKEditorHandling( domElement, editor ) {
 // name ancestorName. If there are multiple matching elements, return only the
 // topmost one.
 export function getNamedAncestor( ancestorName, modelElement ) {
-    return modelElement.getAncestors().filter( x => { return x.name == 'question' } )[0];
+    return modelElement.getAncestors().filter( x => { return x.name == ancestorName } )[0];
+}
+
+// Return the model element that is a child or sibling of modelElement, with the model
+// name ancestorName. Returns the first result in order of:
+// * Children, in DOM order
+// * Siblings, in DOM order
+// * undefined
+export function getNamedChildOrSibling( elementName, modelElement ) {
+    function filterByName( elementName, modelElement ) {
+        return Array.from(modelElement.getChildren()).filter(
+                x => { return x.name == elementName }
+        )[0];
+    }
+
+    let firstMatch;
+    if ( firstMatch = filterByName( elementName, modelElement ) ) {
+        return firstMatch;
+    }
+
+    return filterByName( elementName, modelElement.parent );
 }

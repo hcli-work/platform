@@ -2,9 +2,22 @@
 // and https://github.com/ckeditor/ckeditor5/issues/5569
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 
-const ALLOWED_ATTRIBUTES = [
+export const ALLOWED_ATTRIBUTES = [
     'class',
-    'data-bz-retained'
+    'id',
+    'data-bz-retained',
+    'data-bz-weight',
+    'data-bz-partial-credit',
+    'data-bz-answer',
+    'data-bz-dont-mix',
+    'data-bz-range-answer',
+    'data-bz-insert-offset-year',
+    'data-bz-max-score',
+    'data-bz-optional-magic-field',
+    'data-bz-range-clg',
+    'data-bz-range-flr',
+    'data-bz-reference',
+    'data-bz-share-release',
 ]
 
 export default class CustomElementAttributePreservation extends Plugin {
@@ -155,40 +168,44 @@ function setupAllowedAttributePreservation( editor ) {
         allowContentOf: '$block'
     } );
 
-    // View-to-model converter converting a view <div> with all its attributes to the model.
+    // Elements we want to allow custom attribute preservation on.
+    // { view: model }
+    // Note: hN = heading(N-1) is a ckeditor5 convention.
+    const elements = {
+        'p': 'paragraph',
+        'td': 'tableCell',
+        'h2': 'heading1',
+        'h3': 'heading2',
+        'h4': 'heading3',
+        'h5': 'heading4',
+        'h6': 'heading5',
+    }
+
+    Object.keys( elements ).forEach( ( key ) => {
+        // View-to-model converter converting a view element with all its attributes to the model.
+        editor.conversion.for( 'upcast' ).elementToElement( {
+            view: key,
+            model: ( viewElement, modelWriter ) => {
+                return modelWriter.createElement( elements[key], filterAllowedAttributes( viewElement.getAttributes() ) );
+            },
+            // Use high priority to overwrite existing converters.
+            converterPriority: 'high'
+        } );
+    } );
+
+
+    // Div and span converters must be regular priority so they don't override more specific converters defined elsewhere.
     editor.conversion.for( 'upcast' ).elementToElement( {
         view: 'div',
         model: ( viewElement, modelWriter ) => {
             return modelWriter.createElement( 'div', filterAllowedAttributes( viewElement.getAttributes() ) );
         },
     } );
-
-    // View-to-model converter converting a view <span> with all its attributes to the model.
     editor.conversion.for( 'upcast' ).elementToElement( {
         view: 'span',
         model: ( viewElement, modelWriter ) => {
             return modelWriter.createElement( 'span', filterAllowedAttributes( viewElement.getAttributes() ) );
         },
-    } );
-
-    // View-to-model converter converting a view <p> with all its attributes to the model.
-    editor.conversion.for( 'upcast' ).elementToElement( {
-        view: 'p',
-        model: ( viewElement, modelWriter ) => {
-            return modelWriter.createElement( 'paragraph', filterAllowedAttributes( viewElement.getAttributes() ) );
-        },
-        // Use high priority to overwrite existing paragraph converter.
-        converterPriority: 'high'
-    } );
-
-    // View-to-model converter converting a view <td> with all its attributes to the model.
-    editor.conversion.for( 'upcast' ).elementToElement( {
-        view: 'td',
-        model: ( viewElement, modelWriter ) => {
-            return modelWriter.createElement( 'tableCell', filterAllowedAttributes( viewElement.getAttributes() ) );
-        },
-        // Use high priority to overwrite existing tableCell converter.
-        converterPriority: 'high'
     } );
 
     // Model-to-view converter for the <div> element (attrbiutes are converted separately).
@@ -230,7 +247,7 @@ function setupAllowedAttributePreservation( editor ) {
 
 // Filter out attributes that aren't in ALLOWED_ATTRIBUTES.
 // Return a map of key:value pairs as expected by createElement.
-function filterAllowedAttributes( attributeGenerator ) {
+export function filterAllowedAttributes( attributeGenerator ) {
     return new Map( [...attributeGenerator].filter( item => {
         // item == [key, value]
         return ALLOWED_ATTRIBUTES.includes( item[0] );

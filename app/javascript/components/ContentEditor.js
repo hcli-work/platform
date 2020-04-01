@@ -40,6 +40,7 @@ import SimpleUploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/simpleu
 // CKEditor plugin implementing a content part widget to be used in the editor content.
 import RetainedData from '../ckeditor/retaineddata';
 import ContentCommonEditing from '../ckeditor/contentcommonediting';
+import ModuleBlockEditing from '../ckeditor/moduleblockediting';
 import ChecklistQuestionEditing from '../ckeditor/checklistquestionediting';
 import SliderQuestionEditing from '../ckeditor/sliderquestionediting';
 import RadioQuestionEditing from '../ckeditor/radioquestionediting';
@@ -52,7 +53,6 @@ import BlockquoteContentEditing from '../ckeditor/blockquotecontentediting';
 import IFrameContentEditing from '../ckeditor/iframecontentediting';
 import VideoContentEditing from '../ckeditor/videocontentediting';
 import SectionEditing from '../ckeditor/sectionediting';
-import ContentBlockEditing from '../ckeditor/contentblockediting';
 
 import Tooltip from '../ckeditor/tooltip';
 import ImageLink from '../ckeditor/imagelink';
@@ -63,7 +63,7 @@ import ContentPartList from './ContentPartList';
 import ContentPartPreview from './ContentPartPreview';
 
 // Other local imports.
-import { getNamedAncestor } from '../ckeditor/utils';
+import { getNamedAncestor, getNamedChildOrSibling } from '../ckeditor/utils';
 
 // Plugins to include in the build.
 BalloonEditor.builtinPlugins = [
@@ -93,6 +93,7 @@ BalloonEditor.builtinPlugins = [
 
     RetainedData,
     ContentCommonEditing,
+    ModuleBlockEditing,
     ChecklistQuestionEditing,
     RadioQuestionEditing,
     SliderQuestionEditing,
@@ -105,7 +106,6 @@ BalloonEditor.builtinPlugins = [
     IFrameContentEditing,
     VideoContentEditing,
     SectionEditing,
-    ContentBlockEditing,
 ];
 
 // Editor configuration.
@@ -162,6 +162,16 @@ BalloonEditor.defaultConfig = {
             'tableColumn',
             'tableRow',
             'mergeTableCells'
+        ]
+    },
+    heading: {
+        options: [
+            { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+            { model: 'heading1', view: 'h2', title: 'Heading 1', class: 'ck-heading_h2' },
+            { model: 'heading2', view: 'h3', title: 'Heading 2', class: 'ck-heading_h3' },
+            { model: 'heading3', view: 'h4', title: 'Heading 3', class: 'ck-heading_h4' },
+            { model: 'heading4', view: 'h5', title: 'Heading 4', class: 'ck-heading_h5' },
+            { model: 'heading5', view: 'h6', title: 'Heading 5', class: 'ck-heading_h6' },
         ]
     },
     simpleUpload: {
@@ -454,15 +464,21 @@ class ContentEditor extends Component {
                                             <label htmlFor='input-answer'>Correct Answer</label>
                                         </>
                                     );
-                                } else if ( ['checkboxInput', 'radioInput'].includes( modelElement ) ) {
+                                } else if ( ['checkboxDiv', 'radioDiv'].includes( modelElement ) ) {
+                                    const inputTypes = {
+                                        'checkboxDiv': 'checkboxInput',
+                                        'radioDiv': 'radioInput',
+                                    }
+                                    const inputElement = getNamedChildOrSibling( inputTypes[modelElement], this.state['selectedElement'] );
+
                                     return (
                                         <>
                                             <h4>Option</h4>
                                             <select
                                                 id='input-correctness'
-                                                defaultValue={this.state['selectedElement'].getAttribute('data-correctness')}
+                                                defaultValue={inputElement.getAttribute('data-correctness')}
                                                 onChange={( evt ) => {
-                                                    this.editor.execute( 'setAttributes', { 'data-correctness': evt.target.value } );
+                                                    this.editor.execute( 'setAttributes', { 'data-correctness': evt.target.value }, inputElement );
                                                 }}
                                             >
                                                 <option value="">CHOOSE ONE</option>
@@ -475,6 +491,13 @@ class ContentEditor extends Component {
                                     );
                                 } else if ( ['question'].includes( modelElement ) ) {
                                     const questionElem = getNamedAncestor( 'question', this.state['selectedElement'] );
+
+                                    if (questionElem === undefined) {
+                                        // The selected element no longer has 'question' as an ancestor - it was
+                                        // probably deleted. We can just return and let React re-render with the new
+                                        // selection.
+                                        return;
+                                    }
 
                                     return (
                                         <>
@@ -584,6 +607,15 @@ class ContentEditor extends Component {
                             </ul>
                             <ul key="content-part-list-content" className="widget-list">
                                 <ContentPartPreview
+                                    key="insertContentBlock"
+                                    enabled={this.state.enabledCommands.includes('insertContentBlock')}
+                                    onClick={( id ) => {
+                                        this.editor.execute( 'insertContentBlock' );
+                                        this.editor.editing.view.focus();
+                                    }}
+                                    {...{name: 'Text'}}
+                                />
+                                <ContentPartPreview
                                     key="insertTableContent"
                                     enabled={this.state.enabledCommands.includes('insertTableContent')}
                                     onClick={( id ) => {
@@ -604,16 +636,6 @@ class ContentEditor extends Component {
                                     {...{name: 'Quote'}}
                                 />
                                 <ContentPartPreview
-                                    key="insertIFrameContent"
-                                    enabled={this.state.enabledCommands.includes('insertIFrameContent')}
-                                    onClick={( id ) => {
-                                        const url = window.prompt('URL', 'http://example.com' );
-                                        this.editor.execute( 'insertIFrameContent', url );
-                                        this.editor.editing.view.focus();
-                                    }}
-                                    {...{name: 'iFrame'}}
-                                />
-                                <ContentPartPreview
                                     key="insertVideoContent"
                                     enabled={this.state.enabledCommands.includes('insertVideoContent')}
                                     onClick={( id ) => {
@@ -625,6 +647,16 @@ class ContentEditor extends Component {
                                 />
                             </ul>
                             <ul key="content-part-list-elements" className="widget-list">
+                                <ContentPartPreview
+                                    key="insertIFrameContent"
+                                    enabled={this.state.enabledCommands.includes('insertIFrameContent')}
+                                    onClick={( id ) => {
+                                        const url = window.prompt('URL', 'http://example.com' );
+                                        this.editor.execute( 'insertIFrameContent', url );
+                                        this.editor.editing.view.focus();
+                                    }}
+                                    {...{name: 'IFrame'}}
+                                />
                                 <ContentPartPreview
                                     key="insertTextArea"
                                     enabled={this.state.enabledCommands.includes('insertTextArea')}
@@ -654,7 +686,7 @@ class ContentEditor extends Component {
                                 />
                                 <ContentPartPreview
                                     key="imageUpload"
-                                    enabled={this.state.enabledCommands.includes('imageUpload')}
+                                    enabled={false}
                                     onClick={this.showFileUpload}
                                     {...{name: 'Image (Upload)'}}
                                 />
