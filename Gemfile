@@ -100,3 +100,13 @@ gem 'honeycomb-beeline', require: false
 # in the middle of the night to avoid downtime when users are on the platform
 # See: https://github.com/heroku/platform-api
 gem 'platform-api', require: false
+
+# Implementation of JSON Web Token (JWT) standard: https://github.com/jwt/ruby-jwt
+gem 'jwt'
+
+# HTTP/REST API client library
+gem 'faraday_middleware'
+# Cache HTTP responses
+gem 'faraday-http-cache'
+# Generates attr_accessors that encrypt and decrypt attributes transparently
+gem 'attr_encrypted'

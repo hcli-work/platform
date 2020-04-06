@@ -1,0 +1,11 @@
+<div>
+  Hi <strong><%= @canvas_fullname %></strong> please select the assignment below to insert into the <strong><%= @canvas_course_name %></strong> course! <br/><br/>
+  lti_assignment_selection index template <br/><br/>
+  
+  <!-- TODO: setup a handle to do the post back to Canvas -->
+  <form action="<%= @deep_link_return_url %>" method="post" id="deep-link-form">
+    <input id="JWT" name='JWT' type='hidden' value="<%= @jwt_response %>" />
+    <input type='submit' value='Submit' />
+  </form>
+
+</div>

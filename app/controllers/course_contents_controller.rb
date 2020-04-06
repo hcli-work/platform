@@ -14,6 +14,7 @@ class CourseContentsController < ApplicationController
 
   # GET /course_contents/new
   def new
+    response.headers["X-FRAME-OPTIONS"] = "ALLOW-FROM https://braven.instructure.com"
     @course_contents = CourseContent.all
     @course_content = CourseContent.new
   end

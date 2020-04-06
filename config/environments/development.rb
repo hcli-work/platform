@@ -17,14 +17,14 @@ Rails.application.configure do
   if Rails.root.join('tmp', 'caching-dev.txt').exist?
     config.action_controller.perform_caching = true
 
-    config.cache_store = :memory_store
+    config.cache_store = :file_store, "tmp/cache"
     config.public_file_server.headers = {
       'Cache-Control' => "public, max-age=#{2.days.to_i}"
     }
   else
+    # Disable caching for the rails stuff, but all expclit calls in the code to still use a cache
     config.action_controller.perform_caching = false
-
-    config.cache_store = :null_store
+    config.cache_store = :file_store, "tmp/cache"
   end
 
   # Store uploaded files on the local file system (see config/storage.yml for options)
@@ -35,6 +35,16 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
   config.action_mailer.default_url_options= {host: 'localhost', port: '3020'}
+
+  # Use the lowest log level to ensure availability of diagnostic information
+  # when problems arise.
+  config.log_level = :debug
+
+  if ENV["RAILS_LOG_TO_STDOUT"].present?
+    logger           = ActiveSupport::Logger.new(STDOUT)
+    logger.formatter = config.log_formatter
+    config.logger    = ActiveSupport::TaggedLogging.new(logger)
+  end
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

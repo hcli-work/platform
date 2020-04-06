@@ -22,6 +22,9 @@ ENV BUNDLE_PATH /gems
 RUN bundle install
 RUN yarn install --check-files
 
+# New versions of vim enter visual mode when you use the mouse to highlight things (e.g. to copy / paste). Disable that.
+RUN echo "set mouse-=a" >> ~/.vimrc
+
 COPY . /usr/src/app/
 
 CMD ["/bin/sh"]

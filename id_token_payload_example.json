@@ -1,0 +1,47 @@
+{
+    "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
+        "lineitems": "https://braven.instructure.com/api/lti/courses/34/line_items",
+        "scope": [
+            "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
+            "https://purl.imsglobal.org/spec/lti-ags/scope/score"
+        ]
+    },
+    "https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": {
+        "context_memberships_url": "https://braven.instructure.com/api/lti/courses/34/names_and_roles",
+        "service_versions": [
+            "2.0"
+        ]
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/context": {
+        "id": "bb139c824ee94deb0f633400b6d07323f61377dd",
+        "label": "LTI_POC",
+        "title": "LTI Extension PoC Course",
+        "type": [
+            "http://purl.imsglobal.org/vocab/lis/v2/course#CourseOffering"
+        ]
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/custom": {
+        "account_id": 3,
+        "course_id": 34,
+        "course_name": "LTI Extension PoC Course",
+        "role": "TeacherEnrollment,Account Admin",
+        "section_ids": "38",
+        "user_email": "brian@bebraven.org",
+        "user_id": 75
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
+        "document_target": "iframe",
+        "height": 1000,
+        "return_url": "https://braven.instructure.com/courses/34/external_content/success/external_tool_dialog",
+        "width": 750
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
+    "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
+        "description": null,
+        "id": "bb139c824ee94deb0f633400b6d07323f61377dd",
+        "title": null
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/target_link_uri": "https://platformweb/lti_poc"
+}
+
+

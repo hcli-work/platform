@@ -1,0 +1,118 @@
+{
+    "aud": "10000000000001",
+    "azp": "10000000000001",
+    "errors": {
+        "errors": {}
+    },
+    "exp": 1585335264,
+    "https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings": {
+        "accept_media_types": "application/vnd.ims.lti.v1.ltilink",
+        "accept_multiple": false,
+        "accept_presentation_document_targets": [
+            "iframe",
+            "window"
+        ],
+        "accept_types": [
+            "ltiResourceLink"
+        ],
+        "auto_create": false,
+        "deep_link_return_url": "http://canvascloud:3030/courses/1/deep_linking_response?modal=true",
+        "errors": {
+            "errors": {}
+        },
+        "validation_context": null
+    },
+    "https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": {
+        "context_memberships_url": "http://canvascloud:3030/api/lti/courses/1/names_and_roles",
+        "errors": {
+            "errors": {}
+        },
+        "service_versions": [
+            "2.0"
+        ],
+        "validation_context": null
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/context": {
+        "errors": {
+            "errors": {}
+        },
+        "id": "4dde05e8ca1973bcca9bffc13e1548820eee93a3",
+        "label": "LTI_POC",
+        "title": "LTI 1.3 Extension PoC",
+        "type": [
+            "http://purl.imsglobal.org/vocab/lis/v2/course#CourseOffering"
+        ],
+        "validation_context": null
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/custom": {
+        "account_id": 2,
+        "account_name": "Braven Cloud",
+        "assignment_due_at": "$Canvas.assignment.dueAt.iso8601",
+        "assignment_id": "$Canvas.assignment.id",
+        "assignment_lock_date": "$Canvas.assignment.lockAt.iso8601",
+        "assignment_lti_id": "$com.instructure.Assignment.lti.id",
+        "assignment_points": "$Canvas.assignment.pointsPossible",
+        "assignment_title": "$Canvas.assignment.title",
+        "assignment_unlock_date": "$Canvas.assignment.unlockAt.iso8601",
+        "attachment_id": "$Canvas.file.media.id",
+        "attachment_title": "$Canvas.file.media.title",
+        "browser_info": "iframe",
+        "context_id": "4dde05e8ca1973bcca9bffc13e1548820eee93a3",
+        "context_source_id": null,
+        "course_id": 1,
+        "course_name": "LTI 1.3 Extension PoC",
+        "course_source_id": null,
+        "lti_url": "$LtiLink.custom.url",
+        "module_id": "$Canvas.module.id",
+        "module_item_id": "$Canvas.moduleItem.id",
+        "role": "DesignerEnrollment,Account Admin",
+        "section_ids": "1",
+        "submission_history_url": "api/lti/assignments/{assignment_id}/submissions/{submission_id}/history",
+        "submission_id": "$com.instructure.Submission.id",
+        "submission_url": "api/lti/assignments/{assignment_id}/submissions/{submission_id}",
+        "timezone": "America/Denver",
+        "title": "LTI 1.3 Extension PoC",
+        "user_email": "brian@bebraven.org",
+        "user_first_name": "brian@bebraven.org",
+        "user_fullname": "brian@bebraven.org",
+        "user_id": 2,
+        "user_last_name": ""
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/deployment_id": "1:b82229c6e10bcb87beb1f1b287faee560ddc3109",
+    "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
+        "document_target": "iframe",
+        "errors": {
+            "errors": {}
+        },
+        "height": 1000,
+        "locale": "en",
+        "return_url": "http://canvascloud:3030/courses/1/external_content/success/external_tool_dialog",
+        "validation_context": null,
+        "width": 1000
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiDeepLinkingRequest",
+    "https://purl.imsglobal.org/spec/lti/claim/roles": [
+        "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator",
+        "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor",
+        "http://purl.imsglobal.org/vocab/lis/v2/membership#ContentDeveloper",
+        "http://purl.imsglobal.org/vocab/lis/v2/system/person#SysAdmin",
+        "http://purl.imsglobal.org/vocab/lis/v2/system/person#User"
+    ],
+    "https://purl.imsglobal.org/spec/lti/claim/target_link_uri": "https://platformweb/lti_assignment_selection",
+    "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
+        "errors": {
+            "errors": {}
+        },
+        "guid": "f00cSgAs6Dt12Rq5goE7If6zkWbccsRdYMjRuSJQ:canvas-lms",
+        "name": "Braven Cloud",
+        "product_family_code": "canvas",
+        "validation_context": null,
+        "version": "cloud"
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
+    "iat": 1585331664,
+    "iss": "https://canvas.instructure.com",
+    "locale": "en",
+    "nonce": "987654321",
+    "sub": "dade2814-8302-4c62-893a-b66244c77184"
+}

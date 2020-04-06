@@ -63,6 +63,30 @@ Rails.application.routes.draw do
   resources :lti_course_navigation, only: [:index, :create]     # https://canvas.instructure.com/doc/api/file.navigation_tools.html
   resources :lti_account_navigation, only: [:index, :create]    # https://canvas.instructure.com/doc/api/file.navigation_tools.html
   resources :lti_user_navigation, only: [:index, :create]        # https://canvas.instructure.com/doc/api/file.navigation_tools.html
+  resources :lti_assignment_selection, only: [:index, :create]     # https://canvas.instructure.com/doc/api/file.assignment_selection_placement.html
+  resources :lti_resource_selection, only: [:index, :create]     # Steps 3 and 4 of this flow: https://canvas.instructure.com/doc/api/file.assignment_selection_placement.html
+  resources :lti_poc, only: [:index, :create]
+  post '/lti/login', to: 'lti_launch#login'
+  post '/lti/launch', to: 'lti_launch#launch'
+  post '/lti/deep_link', to: 'lti_launch#deep_link_response'
+  get '/lti/launch', to: 'lti_launch#launch'
+  get '/lti/assignment', to: 'lti_homework_submission#index'
+  post '/lti/assignment', to: 'lti_homework_submission#create'
+
+  # TODO: clean this up. Just copying over stuff from here: https://github.com/Drieam/LtiLauncher to try it out.
+  namespace :api, defaults: { format: 'json' }, constraints: { format: 'json' } do
+    namespace :v1 do
+      resources :auth_servers, only: [] do
+        resources :tools, only: :index
+      end
+    end
+  end
+
+  get '/launch/:tool_client_id', to: 'launches#show', as: :launch
+  get '/callback', to: 'launches#callback', as: :launch_callback
+  get '/auth', to: 'launches#auth', format: :html
+  post '/oauth2/token', to: 'oauth2_tokens#create', format: :json
+  resources :keypairs, only: :index, format: :j
 
   # RubyCAS Routes
   resources :cas, except: [:show]

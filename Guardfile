@@ -55,6 +55,7 @@ guard 'livereload' do
   watch(%r{config/locales/.+\.yml})
 end
 
+# TODO: Ryan says that if I change webpack-dev-server to webpacker then it won't recompile on each restart
 ### Guard::Webpacker
 #  available options:
 #  - :bin (defaults to "webpack-dev-server") to run

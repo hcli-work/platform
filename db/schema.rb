@@ -10,10 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_20_212829) do
+ActiveRecord::Schema.define(version: 2020_03_17_114010) do
 
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pgcrypto"
   enable_extension "plpgsql"
+  enable_extension "uuid-ossp"
 
   create_table "access_tokens", force: :cascade do |t|
     t.string "name"
@@ -32,6 +34,19 @@ ActiveRecord::Schema.define(version: 2020_02_20_212829) do
     t.string "zip", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "auth_servers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name", null: false
+    t.string "openid_configuration_url"
+    t.string "authorization_endpoint", null: false
+    t.string "token_endpoint", null: false
+    t.string "client_id", null: false
+    t.string "client_secret", null: false
+    t.string "context_jwks_url", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["name"], name: "index_auth_servers_on_name", unique: true
   end
 
   create_table "course_content_histories", force: :cascade do |t|
@@ -83,6 +98,16 @@ ActiveRecord::Schema.define(version: 2020_02_20_212829) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_interests_on_name"
+  end
+
+  create_table "keypairs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "jwk_kid", null: false
+    t.string "encrypted__keypair", null: false
+    t.string "encrypted__keypair_iv", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["created_at"], name: "index_keypairs_on_created_at"
+    t.index ["jwk_kid"], name: "index_keypairs_on_jwk_kid"
   end
 
   create_table "lesson_submissions", force: :cascade do |t|
@@ -147,6 +172,14 @@ ActiveRecord::Schema.define(version: 2020_02_20_212829) do
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_majors_on_name"
     t.index ["parent_id"], name: "index_majors_on_parent_id"
+  end
+
+  create_table "nonces", id: false, force: :cascade do |t|
+    t.uuid "tool_id", null: false
+    t.string "key", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["tool_id", "key"], name: "index_nonces_on_tool_id_and_key", unique: true
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -329,6 +362,20 @@ ActiveRecord::Schema.define(version: 2020_02_20_212829) do
     t.string "extra_attributes", null: false
   end
 
+  create_table "tools", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "auth_server_id", null: false
+    t.string "client_id", null: false
+    t.string "name", null: false
+    t.string "open_id_connect_initiation_url", null: false
+    t.string "target_link_uri", null: false
+    t.string "description"
+    t.string "icon_url"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["auth_server_id"], name: "index_tools_on_auth_server_id"
+    t.index ["client_id"], name: "index_tools_on_client_id", unique: true
+  end
+
   create_table "user_sections", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "section_id", null: false
@@ -360,6 +407,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_212829) do
   add_foreign_key "lesson_submissions", "users"
   add_foreign_key "lessons", "grade_categories"
   add_foreign_key "logistics", "programs"
+  add_foreign_key "nonces", "tools"
   add_foreign_key "programs", "organizations"
   add_foreign_key "project_submissions", "projects"
   add_foreign_key "project_submissions", "users"
@@ -374,6 +422,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_212829) do
   add_foreign_key "rubrics", "projects"
   add_foreign_key "sections", "logistics"
   add_foreign_key "sections", "programs"
+  add_foreign_key "tools", "auth_servers"
   add_foreign_key "user_sections", "sections"
   add_foreign_key "user_sections", "users"
 end
