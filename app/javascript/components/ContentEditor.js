@@ -53,6 +53,7 @@ import BlockquoteContentEditing from '../ckeditor/blockquotecontentediting';
 import IFrameContentEditing from '../ckeditor/iframecontentediting';
 import VideoContentEditing from '../ckeditor/videocontentediting';
 import SectionEditing from '../ckeditor/sectionediting';
+import PortalImageEditing from '../ckeditor/portalimageediting';
 
 import Tooltip from '../ckeditor/tooltip';
 import ImageLink from '../ckeditor/imagelink';
@@ -106,6 +107,7 @@ BalloonEditor.builtinPlugins = [
     IFrameContentEditing,
     VideoContentEditing,
     SectionEditing,
+    PortalImageEditing,
 ];
 
 // Editor configuration.
@@ -369,6 +371,9 @@ class ContentEditor extends Component {
                         <li onClick={(evt) => this.handlePublish(evt)} className={this.state['isPublished'] ? "success" : ""}>
                           Publish{this.state['isPublished'] ? "ed" : ""} {this.state['isPublished']}
                         </li>
+                        <li onClick={(evt) => document.forms[0].submit()}>
+                          Save
+                        </li>
                     </ul>
 
                 </header>
@@ -387,6 +392,25 @@ class ContentEditor extends Component {
                                        placeholder="Page Title"
                                 />
                             </h2>
+                            <details>
+                              <summary>Advanced</summary>
+                              <select name="course_content[content_type]"
+                                      defaultValue={this.props.course_content['content_type']}
+                                      placeholder="Content Type">
+                                <option value="">SELECT PAGE TYPE</option>
+                                <option value="wiki_page">Module</option>
+                                <option value="assignment">Project</option>
+                              </select>
+                              <br/>
+                              <input type="number" name="course_content[course_id]"
+                                     defaultValue={this.props.course_content['course_id']}
+                                     placeholder="Course ID"
+                              />
+                              <input type="text" name="course_content[secondary_id]"
+                                     defaultValue={this.props.course_content['secondary_id']}
+                                     placeholder="Secondary ID"
+                              />
+                            </details>
                         </div>
                         <div id="toolbar-contextual">
                             {this.state.modelPath.map( modelElement => {
