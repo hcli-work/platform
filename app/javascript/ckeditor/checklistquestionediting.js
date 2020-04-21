@@ -37,12 +37,14 @@ export default class ChecklistQuestionEditing extends Plugin {
             const selectedElement = selection.getSelectedElement();
 
             if ( selectedElement && selectedElement.name == 'checkboxDiv' ) {
+                if (data.domEvent.key === 'Backspace') {
+                    return;
+                }
                 if ( data.domEvent.key === 'Enter' ) {
                     // This will end up calling our enter listener below.
                     this.editor.editing.view.document.fire( 'enter', { evt, data } );
-                    data.preventDefault();
-                    evt.stop();
                 }
+                evt.stop();
             }
         }, { priority: 'highest' } );
 
